@@ -60,7 +60,7 @@ async def judge(answers: SubmitAnswers):
 
     return average_score
 
-async def save_score(answer: Answer, userID: int):
+async def save_score(answer: Answer, userID: str):
     answer.user_id = userID
     print(answer.dict())
     response = await db(path = "user_answers", method = "post", data = answer.dict())

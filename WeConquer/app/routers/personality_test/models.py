@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from datetime import datetime
 class User(BaseModel):
-    user_id: int
+    user_id: str
     email: EmailStr
     tier_type: str | None
     user_status: str | None
@@ -23,7 +23,7 @@ class Question(BaseModel):
     cheated: bool | None
 
 class Answer(BaseModel):
-    user_id: int | None
+    user_id: str | None
     question_id: int
     answer_text: str
     answer_score: int | None
@@ -35,7 +35,7 @@ class Answer(BaseModel):
     justification: str | None
 
 class StartTestRequest(BaseModel):
-    user_id: int
+    user_id: str
 
 class QuestionBatch(BaseModel):
     batch_id: int
@@ -44,14 +44,15 @@ class QuestionBatch(BaseModel):
     questions: List[Question] | None = []   # Define the Question model based on your needs
 
 class SubmitAnswers(BaseModel):
-    user_id: int
+    user_id: str
     answers: List[Answer]
 class UserSession(BaseModel):
     session_id: int
-    user_id: int
+    user_id: str | None
     finished_batches: List[int]
     amount_of_batches_left: int
     remaining_batches: List[int]
+    auth_provider_id: str | None
 
 class BatchPackage(BaseModel):
     package_id: int

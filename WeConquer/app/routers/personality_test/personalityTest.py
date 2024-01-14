@@ -1,13 +1,14 @@
 from fastapi import  HTTPException, APIRouter, Request
 from app.routers.personality_test.models import Question, StartTestRequest, QuestionBatch, SubmitAnswers
-from app.routers.personality_test.functions import get_first_question_batch, judge
-
+from app.routers.personality_test.functions import get_question_batch, judge
+from db import db
 personality_test_router = APIRouter()
 
 
 @personality_test_router.post("/start-or-continue-test")
 async def start_test(request: Request):
-    first_batch = await get_first_question_batch((await request.json())['user_id'])
+    first_batch = await get_question_batch((await request.json())['user_id'])
+
     return first_batch[0]
 
 @personality_test_router.post("/submit-answers/")
@@ -17,3 +18,20 @@ async def submit_answers(answers: SubmitAnswers):
 
     return scores
 
+@personality_test_router.post("/user_test_status/")
+async def test_status(request: Request):
+    request = await request.json()
+    user_id = request.get("auth_provider_id")
+    query_to_get_session = f"user_test_sessions?auth_provider_id=eq.{user_id}"
+    session_response = await db(path=query_to_get_session, method="get")
+    if session_response.status_code == 404:
+        return {"test_status": "not-started"}
+
+    if session_response.status_code == 200:
+        session_response = session_response.json()[0]
+        if session_response["amount_of_batches_left"] == 0:
+            return {"test_status": "completed"}
+        else:
+            return {"test_status": "in-progress"}
+
+    return session_response.json()[0]

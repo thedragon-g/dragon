@@ -6,28 +6,25 @@ from app.routers.personality_test.judge import judge
 import random
 from datetime import datetime
 
-async def get_user_data(user_id: int):
-    query = f"users?user_id=eq.{user_id}"
+async def get_user_data(user_id: str):
+    query = f"users?auth_provider_id=eq.{user_id}"
 
     db_response = await db(path = query, method = "get")
     print(db_response.json())
     return User(**db_response.json()[0])
 
 async def get_first_question_batch(user_id):
-    # Fetch and shuffle the first batch of questions
-    print("2 we're in it")
-
-    user: User = await get_user_data(user_id)
     # question_batch: QuestionBatch = await get_question_batch(user.tier_type, 1, user_id)
-    question_batch = await get_question_batch(user.tier_type, user_id)
+    question_batch = await get_question_batch(user_id)
 
     return question_batch
 
 
 
-async def get_question_batch(user_tier: str, user_id):
-
-    query_to_get_session = f"user_test_sessions?user_id=eq.{user_id}&order=session_id.desc&limit=1"
+async def get_question_batch(user_id):
+    user: User = await get_user_data(user_id)
+    user_tier = user.tier_type
+    query_to_get_session = f"user_test_sessions?auth_provider_id=eq.{user_id}&order=session_id.desc&limit=1"
     session_response = await db(path=query_to_get_session, method="get")
     #IF session_response = 404, then it's a new user, so we need to create a new session.
     print(session_response)
@@ -39,11 +36,11 @@ async def get_question_batch(user_tier: str, user_id):
         print(query_to_get_session)
         questions_first_time = await get_question_batch_for_first_time(user_tier, user_id)
         return questions_first_time
-
+    print("everything is good till here")
     user_session = UserSession(**session_response[0])
 
     if user_session.amount_of_batches_left == 0:
-        return {"test_status": "completed"}
+        return [{"test_status": "completed"}]
     remaining_batches = user_session.remaining_batches
     finished_batches = user_session.finished_batches
     print(remaining_batches)
@@ -118,7 +115,7 @@ async def get_question_batch_for_first_time(user_tier, user_id):
     batch_ids.remove(random_batch_id)
 
     data = {
-        "user_id": user_id,
+        "auth_provider_id": user_id,
         "finished_batches": [random_batch_id],
         "remaining_batches": batch_ids,
         "amount_of_batches_left": amount_of_batches_left
