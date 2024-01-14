@@ -87,6 +87,7 @@ const QuestionPanel = ({ questions: quiz }: QuestionPros) => {
 
 	const onHandleSubmit = () => {
 		// TODO:  send this to backend API via REST or GraphQL
+
 		console.log({ user_id: 1, trait: "str", answers });
 	};
 

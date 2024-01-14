@@ -10,6 +10,7 @@ async def get_user_data(user_id: int):
     query = f"users?user_id=eq.{user_id}"
 
     db_response = await db(path = query, method = "get")
+    print(db_response.json())
     return User(**db_response.json()[0])
 
 async def get_first_question_batch(user_id):
@@ -90,6 +91,7 @@ async def check_answers(answers: SubmitAnswers):
 async def get_question_batch_for_first_time(user_tier, user_id):
     query_to_get_package = f"batch_package?tier_type=eq.{user_tier}&limit=1"
     batch_package_db_response = await db(path=query_to_get_package, method="get")
+    print(batch_package_db_response.json())
     package = BatchPackage(**batch_package_db_response.json()[0])
 
     random_batch_id = random.choice(package.batch_ids)
