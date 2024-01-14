@@ -21,17 +21,19 @@ async def submit_answers(answers: SubmitAnswers):
 @personality_test_router.post("/user_test_status/")
 async def test_status(request: Request):
     request = await request.json()
-    user_id = request.get("auth_provider_id")
+    user_id = request.get("user_id")
     query_to_get_session = f"user_test_sessions?auth_provider_id=eq.{user_id}"
     session_response = await db(path=query_to_get_session, method="get")
-    if session_response.status_code == 404:
-        return {"test_status": "not-started"}
 
     if session_response.status_code == 200:
-        session_response = session_response.json()[0]
-        if session_response["amount_of_batches_left"] == 0:
+        session_response = session_response.json()
+        print(session_response)
+        if session_response == []:
+            return {"test_status": "not-started"}
+
+        if session_response.get("amount_of_batches_left") == 0:
             return {"test_status": "completed"}
         else:
             return {"test_status": "in-progress"}
 
-    return session_response.json()[0]
+    return None
